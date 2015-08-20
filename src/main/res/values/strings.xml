@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Anarch</string>
+    <string name="title_activity_web_view_login">Anarch Login</string>
 </resources>

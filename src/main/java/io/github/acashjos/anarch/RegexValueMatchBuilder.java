@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2015 Akash Kurian Jose
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.github.acashjos.anarch;
 
 import android.util.Log;
@@ -9,9 +25,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Created by acashjos on 14/8/15.
- */
+
 public class RegexValueMatchBuilder extends MatchBuilder {
 
 
@@ -23,19 +37,18 @@ public class RegexValueMatchBuilder extends MatchBuilder {
     private boolean singleValue = false;
 
       protected ArrayList<HashMap<String, String>> processResultText(String result) {
-            ArrayList<HashMap<String, String>> result_set = new ArrayList<>();
-          //result=result.substring(1737000,1737500);
+
+          ArrayList<HashMap<String, String>> result_set = new ArrayList<>();
+
             Pattern p = Pattern.compile(regex);
             Matcher m = p.matcher(result);
           Log.e("debug", "patern: "+regex);
-          Log.e("debug", "Length: "+result);
-          Log.e("debug", "\u003C");
             int c = 0;
             while (m.find()) {
                 Log.e("debug", regex + "-" + (c++));
                 Log.e("debug", m.group());
                 Log.e("debug", m.group(0));
-                HashMap<String, String> result_map = new HashMap<String, String>();
+                HashMap<String, String> result_map = new HashMap<>();
                 //copy prefills
                 Iterator entries = prefill.entrySet().iterator();
                 while (entries.hasNext()) {
@@ -80,9 +93,9 @@ public class RegexValueMatchBuilder extends MatchBuilder {
 
 
     public RegexValueMatchBuilder() {
-        firstmatch = new HashMap<String, Integer>();
-        submatch = new HashMap<String, String>();
-        prefill = new HashMap<String, String>();
+        firstmatch = new HashMap<>();
+        submatch = new HashMap<>();
+        prefill = new HashMap<>();
         once = new ArrayList<>();
     }
 

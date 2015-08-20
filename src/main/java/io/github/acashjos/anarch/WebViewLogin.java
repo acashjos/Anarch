@@ -1,10 +1,11 @@
 package io.github.acashjos.anarch;
 
 import android.annotation.SuppressLint;
+import android.app.ActionBar;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -18,21 +19,21 @@ import android.widget.Toast;
 
 import java.io.File;
 
-import in.oxylab.buddybuzzer.R;
-
-public class WebViewLogin extends ActionBarActivity {
+public class WebViewLogin extends Activity {
 
     private String cookies="";
     private int pageloadCount=0;
     private WebView web;
+    private ActionBar actionbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web_view_login);
         CookieManager cookieManager = CookieManager.getInstance();
-        cookieManager.setCookie("https://m.facebook.com","");
-
+        cookieManager.setCookie("https://m.facebook.com", "");
+        actionbar=getActionBar();
+        actionbar.setTitle("");
         web = (WebView) findViewById(R.id.loginfb);
         web.loadUrl("https://m.facebook.com");
         WebSettings webSettings = web.getSettings();
@@ -43,9 +44,10 @@ public class WebViewLogin extends ActionBarActivity {
             public void onPageFinished(WebView view, String url) {
 
                 Log.d("debug",url);
+
+                actionbar.setTitle(view.getTitle());
                 CookieManager cookieManager = CookieManager.getInstance();
-                String cookies = cookieManager.getCookie(url);
-                WebViewLogin.this.cookies= cookies;
+                WebViewLogin.this.cookies= cookieManager.getCookie(url);
                 pageloadCount++;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
                     // In KitKat+ you should use the evaluateJavascript method
@@ -84,37 +86,16 @@ public class WebViewLogin extends ActionBarActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_web_view_login, menu);
-        return true;
+       return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
 
         return super.onOptionsItemSelected(item);
     }
 
          void finalize(String result) {
-
-             File file = new File(getApplicationContext().getFilesDir(), "page.cache");
-/*
-             try {
-                 file.createNewFile();
-                 FileOutputStream writer = openFileOutput(file.getName(), Context.MODE_PRIVATE);
-                 writer.write(result.getBytes());
-                 writer.flush();
-                 writer.close();
-             } catch (IOException e) {	e.printStackTrace();			}*/
 
             Session.LoginState decision=Session.getActiveSession().loginDecisionLogic.loginDecision(
                     pageloadCount,
