@@ -13,4 +13,22 @@
 
     </WebView>
 
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/loading"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:indeterminate="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Loading..."
+        android:id="@+id/loadingtext"
+        android:layout_alignTop="@+id/loginfb"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="38dp" />
+
 </RelativeLayout>

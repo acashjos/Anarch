@@ -20,7 +20,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.util.Log;
+//import android.util.Log;
 import android.webkit.WebView;
 
 import java.io.IOException;
@@ -82,7 +82,7 @@ public class Session{
 
     }
 
-    public enum LoginState{SUCCESS, TRANSIT, FAIL};
+    public enum LoginState{SUCCESS, TRANSIT, FAIL}
 
     private Session(Context applicationContext) {
         this.pref=applicationContext.getApplicationContext().getSharedPreferences("cache", Context.MODE_PRIVATE);
@@ -111,7 +111,7 @@ public class Session{
     }
 
     public boolean isOpen() {
-        return cookies!=null&&cookies!="";
+        return cookies!=null&& !cookies.equals("");
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -139,14 +139,14 @@ public class Session{
 
     private static class BackupLoginDecisionLogic extends LoginDecisionLogic {
         public LoginState loginDecision(int pageloadCount, WebView view, ArrayList<HashMap<String, String>> values, String cookies) {
-            Log.v("debug", "pageloadCount: " + pageloadCount);
-            Log.v("debug", "values: " + (values==null?"null":values.size()));
-            Log.v("debug", "cookie: " + cookies);
+           // Log.v("debug", "pageloadCount: " + pageloadCount);
+            //Log.v("debug", "values: " + (values==null?"null":values.size()));
+            //Log.v("debug", "cookie: " + cookies);
 
       //if matchbuilder is not provided
             if (values == null ) {
                 if (pageloadCount < 2) return LoginState.TRANSIT;
-                else if (cookies == null || cookies == "") return LoginState.FAIL;
+                else if (cookies == null || cookies.equals("")) return LoginState.FAIL;
                 return LoginState.SUCCESS;
             }
             //else
@@ -157,7 +157,7 @@ public class Session{
                 Iterator entries = hash.entrySet().iterator();
                 while (entries.hasNext()) {
                     Map.Entry entry = (Map.Entry) entries.next();
-                    Log.d("debug", (String) entry.getValue());
+                    //Log.d("debug", (String) entry.getValue());
                     if (entry.getValue() == null) empty=true;
                     if (entry.getKey().equals("id")) session.setId((String) entry.getValue());
                     else if (entry.getKey().equals( "name")) session.setName((String) entry.getValue());

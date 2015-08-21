@@ -16,7 +16,7 @@
 
 package io.github.acashjos.anarch;
 
-import android.util.Log;
+//import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,12 +42,12 @@ public class RegexValueMatchBuilder extends MatchBuilder {
 
             Pattern p = Pattern.compile(regex);
             Matcher m = p.matcher(result);
-          Log.e("debug", "patern: "+regex);
+          //Log.e("debug", "patern: "+regex);
             int c = 0;
             while (m.find()) {
-                Log.e("debug", regex + "-" + (c++));
-                Log.e("debug", m.group());
-                Log.e("debug", m.group(0));
+                //Log.e("debug", regex + "-" + (c++));
+                //Log.e("debug", m.group());
+                //Log.e("debug", m.group(0));
                 HashMap<String, String> result_map = new HashMap<>();
                 //copy prefills
                 Iterator entries = prefill.entrySet().iterator();

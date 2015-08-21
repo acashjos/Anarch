@@ -17,15 +17,17 @@
 package io.github.acashjos.anarch;
 
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
+//import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
@@ -40,7 +42,6 @@ public class WebViewLogin extends Activity {
     private String cookies="";
     private int pageloadCount=0;
     private WebView web;
-    private ActionBar actionbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,8 +49,7 @@ public class WebViewLogin extends Activity {
         setContentView(R.layout.activity_web_view_login);
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setCookie("https://m.facebook.com", "");
-        actionbar=getActionBar();
-        actionbar.setTitle("");
+        setTitle("");
         web = (WebView) findViewById(R.id.loginfb);
         web.loadUrl("https://m.facebook.com");
         WebSettings webSettings = web.getSettings();
@@ -59,9 +59,9 @@ public class WebViewLogin extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
 
-                Log.d("debug",url);
+               // Log.d("debug",url);
 
-                actionbar.setTitle(view.getTitle());
+                setTitle(view.getTitle());
                 CookieManager cookieManager = CookieManager.getInstance();
                 WebViewLogin.this.cookies= cookieManager.getCookie(url);
                 pageloadCount++;
@@ -72,6 +72,14 @@ public class WebViewLogin extends Activity {
 
                 else older(view);
 
+            }
+
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+
+                view.setVisibility(View.GONE);
+                findViewById(R.id.loading).setVisibility(View.VISIBLE);
+                findViewById(R.id.loadingtext).setVisibility(View.VISIBLE);
             }
 
         });
@@ -119,7 +127,7 @@ public class WebViewLogin extends Activity {
                     Session.getActiveSession().evaluateMatches(result),
                     cookies);
 
-             Log.v("debug", "decision: " + decision.toString());
+             //Log.v("debug", "decision: " + decision.toString());
             if(decision== Session.LoginState.SUCCESS)
             {
                 getApplication().getSharedPreferences("cache", Context.MODE_PRIVATE).edit().putString("session",cookies).commit();
@@ -134,8 +142,11 @@ public class WebViewLogin extends Activity {
                 Toast.makeText(this,"Login failed",Toast.LENGTH_SHORT).show();
                 finish();
             }
-             else
-                return;
+             else if(decision==Session.LoginState.TRANSIT)
+
+                web.setVisibility(View.VISIBLE);
+                findViewById(R.id.loading).setVisibility(View.GONE);
+             findViewById(R.id.loadingtext).setVisibility(View.GONE);
         }
 
     class MyJavaScriptInterface {

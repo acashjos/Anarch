@@ -18,7 +18,7 @@
 package io.github.acashjos.anarch;
 
 import android.os.AsyncTask;
-import android.util.Log;
+//import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -64,11 +64,11 @@ public class Request {
 
         @Override
         protected String doInBackground(String... params) {
-            Log.v("debug", "url: "+params[0]);
+            //Log.v("debug", "url: "+params[0]);
 
             try{
                 HttpURLConnection cn = (HttpURLConnection) new URL(params[0]).openConnection();
-                Log.v("debug", "connecting");
+                //Log.v("debug", "connecting");
                 cn.setRequestProperty("User-agent", "Mozilla/5.0 (X11; Linux x86_64; rv:39.0) Gecko/20100101 Firefox/39.0");
                 cn.setRequestProperty("Host", "m.facebook.com");
                 cn.setRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
@@ -110,8 +110,8 @@ public class Request {
 
         protected void onPostExecute(String result) {
 
-            Log.v("debug", "done");
-            Log.v("debug", ""+result.length());
+            //Log.v("debug", "done");
+            //Log.v("debug", ""+result.length());
             loadedListener.onValuesLoaded(matchBuilder.processResultText(result));
         }
     }
