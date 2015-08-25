@@ -115,7 +115,7 @@ public class Session{
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode==LOGIN_UI && resultCode==LOGIN_DONE)
+        if(requestCode==LOGIN_UI && resultCode==Activity.RESULT_OK)
         {
             cookies=pref.getString("session","");
             callback.call(this);}

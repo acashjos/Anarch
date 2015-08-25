@@ -134,7 +134,7 @@ public class WebViewLogin extends Activity {
 
                 Intent intent=new Intent();
                 intent.putExtra("login",true);
-                setResult(Session.LOGIN_DONE,intent);
+                setResult(RESULT_OK,intent);
                 finish();
             }
             else if(decision== Session.LoginState.FAIL)
