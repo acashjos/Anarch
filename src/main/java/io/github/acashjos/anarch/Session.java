@@ -20,7 +20,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-//import android.util.Log;
 import android.webkit.WebView;
 
 import java.io.IOException;
@@ -29,6 +28,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+//import android.util.Log;
 
 public class Session{
 
@@ -100,6 +101,13 @@ public class Session{
         session.matchBuilder=matchBuilder;
         session.loginDecisionLogic =logic==null?new BackupLoginDecisionLogic():logic;
     }
+    public static void initialize(Context applicationContext, String url, LoginDecisionLogic logic) {
+        if(logic==null) throw new IllegalArgumentException("Logic cant be null with this initializer");
+        initialize( applicationContext,  url,  null,  logic);
+    }
+    public static void initialize(Context applicationContext, String url, MatchBuilder matchBuilder) {
+        initialize( applicationContext,  url,  matchBuilder, null);
+    }
 
     public static Session getActiveSession() {
         return session;
@@ -124,6 +132,7 @@ public class Session{
     public void openNewSession(Activity activity, StatusCallback statusCallback) {
         this.callback=statusCallback;
         Intent i=new Intent(activity,WebViewLogin.class);
+        i.putExtra("url",url);
         activity.startActivityForResult(i,LOGIN_UI);
     }
 

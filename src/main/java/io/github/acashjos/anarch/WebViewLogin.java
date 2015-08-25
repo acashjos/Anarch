@@ -25,6 +25,8 @@ import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 //import android.util.Log;
+import android.util.Base64;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -51,7 +53,7 @@ public class WebViewLogin extends Activity {
         cookieManager.setCookie("https://m.facebook.com", "");
         setTitle("");
         web = (WebView) findViewById(R.id.loginfb);
-        web.loadUrl("https://m.facebook.com");
+        web.loadUrl(getIntent().getStringExtra("url"));
         WebSettings webSettings = web.getSettings();
         webSettings.setJavaScriptEnabled(true);
         web.setWebViewClient(new WebViewClient() {
@@ -98,12 +100,11 @@ public class WebViewLogin extends Activity {
     @SuppressLint("NewApi")
     private void kitkat(WebView view) {
         view.evaluateJavascript(
-                "(function() { return ('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
+                "window.btoa(function() { return window.btoa('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
                 new ValueCallback<String>() {
                     @Override
                     public void onReceiveValue(String result) {
-
-                       WebViewLogin.this.finalize(result);
+                        WebViewLogin.this.finalize(result);
                     }
                 });
     }
@@ -121,7 +122,8 @@ public class WebViewLogin extends Activity {
 
          void finalize(String result) {
 
-            Session.LoginState decision=Session.getActiveSession().loginDecisionLogic.loginDecision(
+             result = new String(Base64.decode(result, Base64.DEFAULT));
+             Session.LoginState decision=Session.getActiveSession().loginDecisionLogic.loginDecision(
                     pageloadCount,
                     web,
                     Session.getActiveSession().evaluateMatches(result),
