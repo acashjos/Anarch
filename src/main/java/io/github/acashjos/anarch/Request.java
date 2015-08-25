@@ -41,7 +41,6 @@ public class Request {
 
     public Request( MatchBuilder matchBuilder,ValuesHandler loadedListener)
     {
-        this.session = session;
        // this.uid = url;
         this.matchBuilder = matchBuilder;
         this.loadedListener=loadedListener;
