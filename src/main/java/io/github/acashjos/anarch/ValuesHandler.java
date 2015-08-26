@@ -16,6 +16,8 @@
 
 package io.github.acashjos.anarch;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -24,5 +26,5 @@ import java.util.HashMap;
  */
 public interface ValuesHandler {
 
-    void onValuesLoaded(ArrayList<HashMap<String, String>> result);
+    void onValuesLoaded(JSONObject result);
 }

@@ -20,6 +20,7 @@ package io.github.acashjos.anarch;
 import android.os.AsyncTask;
 //import android.util.Log;
 
+import org.json.JSONException;
 import org.jsoup.Connection;
 import org.jsoup.helper.HttpConnection;
 
@@ -100,11 +101,11 @@ public class Request {
         cookies.put(key,val);
     }
 
-    private class Async extends AsyncTask<String, Void, String> {
+    private class Async extends AsyncTask<String, Void, Connection.Response> {
 
 
         @Override
-        protected String doInBackground(String... params) {
+        protected Connection.Response doInBackground(String... params) {
             //Log.v("debug", "url: "+params[0]);
 
             try{
@@ -122,16 +123,21 @@ public class Request {
 
                 if(session!=null)
                     session.setCookies(response.cookies());
-                return  response.body();
-
-            } catch (IOException e) { return "";}
+                return  response;
+            } catch (IOException e) { return null;}
         }
 
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(Connection.Response result) {
 
+            if(result==null) return;
             //Log.v("debug", "done");
             //Log.v("debug", ""+result.length());
-            loadedListener.onValuesLoaded(matchBuilder.processResultText(result));
+            try {
+                loadedListener.onValuesLoaded(matchBuilder.processResultText(result));
+            } catch (JSONException e) {
+
+                loadedListener.onValuesLoaded(null);
+            }
         }
     }
 

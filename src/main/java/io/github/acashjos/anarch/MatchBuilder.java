@@ -16,10 +16,14 @@
 
 package io.github.acashjos.anarch;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.jsoup.Connection;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public abstract class MatchBuilder {
-    protected abstract ArrayList<HashMap<String, String>> processResultText(String result);
+    protected abstract JSONObject processResultText(Connection.Response result) throws JSONException;
 
 }

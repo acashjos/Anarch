@@ -18,6 +18,10 @@ package io.github.acashjos.anarch;
 
 //import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.jsoup.Connection;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -36,9 +40,11 @@ public class RegexValueMatchBuilder extends MatchBuilder {
     private ArrayList<String> once;
     private boolean singleValue = false;
 
-      protected ArrayList<HashMap<String, String>> processResultText(String result) {
+      protected JSONObject processResultText(Connection.Response response) throws JSONException {
 
-          ArrayList<HashMap<String, String>> result_set = new ArrayList<>();
+          String result = response.body();
+          JSONObject result_set = new JSONObject();
+          result_set.put("headers", new JSONObject(response.headers()));
 
             Pattern p = Pattern.compile(regex);
             Matcher m = p.matcher(result);
@@ -84,7 +90,7 @@ public class RegexValueMatchBuilder extends MatchBuilder {
                     }
                 }
 
-                result_set.add(result_map);
+                result_set.put("data", new JSONObject(result_map));
                 if (singleValue) break;
             }
             return result_set;
