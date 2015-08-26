@@ -22,8 +22,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.webkit.WebView;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -73,14 +72,16 @@ public class Session{
         pref.edit().clear().commit();
     }
 
-    void makeCall(HttpURLConnection cn) {
-        cn.setRequestProperty("Cookie", cookies);
-        try {
-            cn.connect();
-        } catch (IOException e) {
+    String getCookieString() {
+        return cookies;
 
-        }
+    }
 
+    public void setCookies(Map<String, String> cookies) {
+        String cookstrt="";
+        for( Map.Entry<String,String> item:cookies.entrySet())
+            cookstrt+=item.getKey()+"="+item.getValue()+";";
+        pref.edit().putString("session",cookstrt).commit();
     }
 
     public enum LoginState{SUCCESS, TRANSIT, FAIL}
