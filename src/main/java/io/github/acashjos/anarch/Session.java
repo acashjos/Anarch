@@ -23,7 +23,10 @@ import android.content.SharedPreferences;
 import android.webkit.WebView;
 
 
-import java.util.ArrayList;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -43,7 +46,7 @@ public class Session{
     private String cookies;
     private StatusCallback callback;
 
-     protected void setId(String id) {
+    protected void setId(String id) {
          pref.edit().putString("id", id).commit();
     }
 
@@ -114,9 +117,10 @@ public class Session{
         return session;
     }
 
-    public ArrayList<HashMap<String, String>> evaluateMatches(String result) {
+    public JSONObject evaluateMatches(String result) {
+
         if(matchBuilder==null) return null;
-        return matchBuilder.processResultText(result);
+        return matchBuilder.processResponseText(result);
     }
 
     public boolean isOpen() {
@@ -144,39 +148,38 @@ public class Session{
     }
 
     public static abstract class LoginDecisionLogic {
-        public abstract LoginState loginDecision(int pageloadCount, WebView view, ArrayList<HashMap<String, String>> values, String cookies);
+        public abstract LoginState loginDecision(int pageloadCount, WebView view, JSONObject values, String cookies);
     }
 
     private static class BackupLoginDecisionLogic extends LoginDecisionLogic {
-        public LoginState loginDecision(int pageloadCount, WebView view, ArrayList<HashMap<String, String>> values, String cookies) {
-           // Log.v("debug", "pageloadCount: " + pageloadCount);
-            //Log.v("debug", "values: " + (values==null?"null":values.size()));
-            //Log.v("debug", "cookie: " + cookies);
+        public LoginState loginDecision(int pageloadCount, WebView view, JSONObject values, String cookies) {
 
-      //if matchbuilder is not provided
-            if (values == null ) {
-                if (pageloadCount < 2) return LoginState.TRANSIT;
-                else if (cookies == null || cookies.equals("")) return LoginState.FAIL;
-                return LoginState.SUCCESS;
-            }
-            //else
+            if(WebViewLogin.instance!=null)
+            {
+                JSONObject passwordFields = MatchBuilder.run(WebViewLogin.instance.htmlText,
+                        (new DOMSelectorMatchBuilder())
+                                .select("input[type=password]")
+                                .set("pfield", "name")
+                                .close());
 
-            Boolean empty=false;
-            if(values.size()==0) empty=true;
-            for (HashMap hash : values) {
-                Iterator entries = hash.entrySet().iterator();
-                while (entries.hasNext()) {
-                    Map.Entry entry = (Map.Entry) entries.next();
-                    //Log.d("debug", (String) entry.getValue());
-                    if (entry.getValue() == null) empty=true;
-                    if (entry.getKey().equals("id")) session.setId((String) entry.getValue());
-                    else if (entry.getKey().equals( "name")) session.setName((String) entry.getValue());
+
+                JSONObject data=new JSONObject();
+                try {
+                    data= passwordFields.getJSONObject("data");
+                } catch (JSONException e) {
+                    return LoginState.FAIL;
                 }
+
+                if(data.has("pfield")) {
+                    if (pageloadCount < 2)
+                        return LoginState.TRANSIT;
+
+                    return LoginState.FAIL;
+                }
+                else return LoginState.SUCCESS;
+
             }
-            if(empty)
-                if(pageloadCount<2) return LoginState.TRANSIT;
-                else return LoginState.FAIL;
-            return LoginState.SUCCESS;
+            return LoginState.FAIL;
         }
     }
 }

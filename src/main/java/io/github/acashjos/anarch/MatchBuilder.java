@@ -24,6 +24,28 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public abstract class MatchBuilder {
-    protected abstract JSONObject processResultText(Connection.Response result) throws JSONException;
+
+    protected Connection.Response response;
+
+    protected JSONObject processResponse(Connection.Response response) {
+
+        this.response=response;
+        String result = response.body();
+
+        JSONObject data = processResponseText(result);
+        JSONObject output = new JSONObject();
+        try {
+            return  (new JSONObject())
+                    .put("headers", new JSONObject(response.headers()))
+                    .put("data",data);
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+    protected abstract JSONObject processResponseText(String responseText);
+
+    public static JSONObject run(String target,MatchBuilder matchBuilder){
+        return matchBuilder.processResponseText(target);
+    }
 
 }

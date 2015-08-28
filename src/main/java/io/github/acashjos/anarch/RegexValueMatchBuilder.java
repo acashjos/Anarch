@@ -40,15 +40,13 @@ public class RegexValueMatchBuilder extends MatchBuilder {
     }
 
     @Override
-    protected JSONObject processResultText(Connection.Response response) throws JSONException {
-
-        String result = response.body();
+    protected JSONObject processResponseText(String responseText) {
         JSONObject output = new JSONObject();
         //HashMap<String,Matcher> matchset = new HashMap<>();
         for(PatternBlueprint test: patternSet)
         {
             Pattern p=Pattern.compile(test.pattern);
-            Matcher m=p.matcher(result);
+            Matcher m=p.matcher(responseText);
 
             JSONArray arr=new JSONArray();
             while (m.find())
@@ -57,7 +55,11 @@ public class RegexValueMatchBuilder extends MatchBuilder {
 
                 //insers keys from mainTest
                 for (Map.Entry<String,Integer> outkey:test.outputKeySet.entrySet())
-                    single.put(outkey.getKey(),m.group(outkey.getValue()));
+                    try {
+                        single.put(outkey.getKey(),m.group(outkey.getValue()));
+                    } catch (JSONException e) {
+                        continue;
+                    }
 
                 for(PatternBlueprint subtest:test.subPatternSet)
                 {
@@ -70,7 +72,11 @@ public class RegexValueMatchBuilder extends MatchBuilder {
                     if(m2.find())
                         //insert keys from subtest
                         for (Map.Entry<String,Integer> outkey:subtest.outputKeySet.entrySet())
-                            single.put(outkey.getKey(),m2.group(outkey.getValue()));
+                            try {
+                                single.put(outkey.getKey(),m2.group(outkey.getValue()));
+                            } catch (JSONException e) {
+                                continue;
+                            }
                 }
                 if(!test.once)
                 {
@@ -78,21 +84,13 @@ public class RegexValueMatchBuilder extends MatchBuilder {
                 }
 
             }
-            if(!test.once)output.put(test.id,arr);
-
-            while (m.find()){
-                JSONObject branch=new JSONObject();
-
-                for(Map.Entry<String,Integer> OPitem: test.outputKeySet.entrySet())
-                {
-                    branch.put(OPitem.getKey(),m.group(OPitem.getValue()));
-                }
-                arr.put(branch);
+            if(!test.once) try {
+                output.put(test.id,arr);
+            } catch (JSONException e) {
+                continue;
             }
 
-
-        }
-        return null;
+        }return output;
     }
 
     public PatternBlueprint addTest(String key,String pattern)
@@ -130,6 +128,11 @@ public class RegexValueMatchBuilder extends MatchBuilder {
            this.parent = parent;
         }
 
+        public PatternBlueprint doOnce()
+        {
+            once=true;
+            return this;
+        }
         public PatternBlueprint addTest(String key,String pattern) {
             return RegexValueMatchBuilder.this.addTest(key, pattern);
         }
@@ -162,7 +165,7 @@ public class RegexValueMatchBuilder extends MatchBuilder {
     private ArrayList<String> once;
     private boolean singleValue = false;
 
-      protected JSONObject processResultText(Connection.Response response) throws JSONException {
+      protected JSONObject processResponse(Connection.Response response) throws JSONException {
 
           String result = response.body();
           JSONObject result_set = new JSONObject();

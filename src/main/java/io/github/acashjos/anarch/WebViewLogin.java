@@ -26,7 +26,6 @@ import android.os.Build;
 import android.os.Bundle;
 //import android.util.Log;
 import android.util.Base64;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -37,18 +36,20 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
-import java.io.File;
-
 public class WebViewLogin extends Activity {
 
     private String cookies="";
     private int pageloadCount=0;
     private WebView web;
+    String htmlText;
+    static WebViewLogin instance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web_view_login);
+
+        instance=this;
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setCookie("https://m.facebook.com", "");
         setTitle("");
@@ -87,6 +88,13 @@ public class WebViewLogin extends Activity {
         });
     }
 
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        instance=null;
+    }
+
     @SuppressLint("JavascriptInterface")
     private void older(WebView view) {
         view.addJavascriptInterface(new MyJavaScriptInterface(), "HtmlViewer");
@@ -122,11 +130,11 @@ public class WebViewLogin extends Activity {
 
          void finalize(String result) {
 
-             result = new String(Base64.decode(result, Base64.DEFAULT));
+             this.htmlText = new String(Base64.decode(result, Base64.DEFAULT));
              Session.LoginState decision=Session.getActiveSession().loginDecisionLogic.loginDecision(
                     pageloadCount,
                     web,
-                    Session.getActiveSession().evaluateMatches(result),
+                    Session.getActiveSession().evaluateMatches(htmlText),
                     cookies);
 
              //Log.v("debug", "decision: " + decision.toString());

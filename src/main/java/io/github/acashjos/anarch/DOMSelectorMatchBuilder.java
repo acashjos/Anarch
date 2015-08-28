@@ -25,12 +25,11 @@ public class DOMSelectorMatchBuilder extends MatchBuilder {
         this.selectorMap = new HashMap<>();
     }
 
+
     @Override
-
-    protected JSONObject processResultText(Connection.Response result) {
-
+    protected JSONObject processResponseText(String responseText) {
         JSONObject output=new JSONObject();
-        Document dom = Jsoup.parse(result.body(), result.url().toString());
+        Document dom = Jsoup.parse(responseText, response.url().toString());
         for(Map.Entry<String,PropertiesBlueprint> item: selectorMap.entrySet())
         {
             Elements elems = dom.select(item.getKey());
@@ -101,7 +100,7 @@ public class DOMSelectorMatchBuilder extends MatchBuilder {
         }
     }
 
-    private class PropertiesBlueprint {
+    protected class PropertiesBlueprint {
 
         private final String selector;
         private HashMap<String,String> props;
@@ -120,6 +119,7 @@ public class DOMSelectorMatchBuilder extends MatchBuilder {
          * @param attribute the attribute to be extracted
          * @return this, for chaining
          */
+
         public PropertiesBlueprint set(String key,String attribute)
         {
             props.put(key, attribute);

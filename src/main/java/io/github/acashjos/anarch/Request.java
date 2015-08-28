@@ -24,11 +24,7 @@ import org.json.JSONException;
 import org.jsoup.Connection;
 import org.jsoup.helper.HttpConnection;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -110,7 +106,6 @@ public class Request {
 
             try{
                 Connection con= HttpConnection.connect(new URL(params[0]));
-                HttpURLConnection cn = (HttpURLConnection) new URL(params[0]).openConnection();
                 //Log.v("debug", "connecting");
                 for(Map.Entry<String,String> item:headers.entrySet())
                 {
@@ -132,12 +127,8 @@ public class Request {
             if(result==null) return;
             //Log.v("debug", "done");
             //Log.v("debug", ""+result.length());
-            try {
-                loadedListener.onValuesLoaded(matchBuilder.processResultText(result));
-            } catch (JSONException e) {
+           loadedListener.onValuesLoaded(matchBuilder.processResponse(result));
 
-                loadedListener.onValuesLoaded(null);
-            }
         }
     }
 
