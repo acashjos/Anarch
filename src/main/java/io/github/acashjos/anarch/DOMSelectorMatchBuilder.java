@@ -18,11 +18,11 @@ import java.util.Map;
  */
 public class DOMSelectorMatchBuilder extends MatchBuilder {
 
-    HashMap<String, Properties> keyList;
+    HashMap<String, PropertiesBlueprint> selectorMap;
     private String currentItem;
 
     public DOMSelectorMatchBuilder() {
-        this.keyList = new HashMap<>();
+        this.selectorMap = new HashMap<>();
     }
 
     @Override
@@ -31,15 +31,16 @@ public class DOMSelectorMatchBuilder extends MatchBuilder {
 
         JSONObject output=new JSONObject();
         Document dom = Jsoup.parse(result.body(), result.url().toString());
-        for(Map.Entry<String,Properties> item:keyList.entrySet())
+        for(Map.Entry<String,PropertiesBlueprint> item: selectorMap.entrySet())
         {
-            Elements elems = dom.select(item.getValue().selector);
+            Elements elems = dom.select(item.getKey());
             if(elems.size()==0)
                 continue;
             else if(elems.size()==1)
             {
                 try {
-                    output.put(item.getKey(), extract(item.getValue().props,elems.get(0)));
+                    for(Map.Entry<String,String> property : item.getValue().props.entrySet())
+                        output.put(property.getKey(), extract(property.getValue(),elems.get(0)));
                 } catch (JSONException e) { continue;}
             }
             else
@@ -48,18 +49,9 @@ public class DOMSelectorMatchBuilder extends MatchBuilder {
                 for(Element sub_elm:elems)
                 {
                     try {
-                        if(item.getValue().props.size()==0)
-                            //if no properties specified, return innerHTML
-                            jsonArray.put(extract("html",elems.get(0)));
-
-                        else if(item.getValue().props.size()==1)
-                            jsonArray.put(extract(item.getValue().props.get(0),elems.get(0)));
-
-                        else
-                            jsonArray.put(extract(item.getValue().props,elems.get(0)));
-                    } catch (JSONException e) {
-                        continue;
-                    }
+                        for(Map.Entry<String,String> property : item.getValue().props.entrySet())
+                            output.put(property.getKey(), extract(property.getValue(),sub_elm));
+                    } catch (JSONException e) { continue;}
                 }
             }
         }
@@ -71,47 +63,21 @@ public class DOMSelectorMatchBuilder extends MatchBuilder {
      * The values will be extracted from HTML element/elements matched by the selector string.
      * Add attributes/properties to be extracted using {@code addTargetProperty(String attribute)}. Default property to be extracted is innerHTML
      * This will result in a JSONObject with {@code key} as key and extracted result as value
-     * @param key the key to be extracted
      * @param selector the selector to select HTML element/elements from which values can be extracted
      * @return this, for chaining
-     * @see DOMSelectorMatchBuilder#addTargetProperty(String attribute)
-     * @see DOMSelectorMatchBuilder#addTargetProperty(String key,String attribute)
      */
-    public DOMSelectorMatchBuilder set(String key,String selector)
+    public PropertiesBlueprint select(String selector)
     {
-        Properties properties=new Properties(selector);
-        this.currentItem=key;
-        keyList.put(key,properties);
-        return this;
+        if(selectorMap.containsKey(selector))
+            return selectorMap.get(selector);
+
+        PropertiesBlueprint propertiesBlueprint =new PropertiesBlueprint(selector);
+        this.currentItem=selector;
+        selectorMap.put(selector, propertiesBlueprint);
+        return propertiesBlueprint;
     }
 
 
-    /**
-     * Adds an attribute or property to the list of target attributes/properties for the last added key using {@code set(key,selector)}
-     * @param attribute the attribute to be extracted
-     * @return this, for chaining
-     * @see DOMSelectorMatchBuilder#addTargetProperty(String key,String attribute)
-     */
-    public DOMSelectorMatchBuilder addTargetProperty(String attribute)
-    {
-        if(currentItem!=null)
-            keyList.get(currentItem).add(attribute);
-        return this;
-    }
-
-
-    /**
-     * Adds an attribute or property to the list of target attributes for the last added key using {@code set(key,selector)}
-     * @param key the key for which the attribute is to be added
-     * @param attribute the attribute to be extracted
-     * @return this, for chaining
-     * @see DOMSelectorMatchBuilder#addTargetProperty(String key,String attribute)
-     */
-    public DOMSelectorMatchBuilder addTargetProperty(String key, String attribute)
-    {
-        keyList.get(key).add(attribute);
-        return this;
-    }
 
     private String extract(String attr, Element element) throws JSONException {
         switch (attr.toLowerCase())
@@ -128,35 +94,54 @@ public class DOMSelectorMatchBuilder extends MatchBuilder {
             case "html":
                 return element.html();
             case "cssselector":
+            case "selector":
                 return element.cssSelector();
             default:
                 return element.attr(attr);
         }
     }
-    private JSONObject extract(ArrayList<String> props,Element element) throws JSONException {
-        JSONObject vals=new JSONObject();
-        for(String attr:props)
-        {
-            vals.put(attr, extract(attr,element));
-        }
-        return vals;
-    }
 
-    public class Properties{
+    private class PropertiesBlueprint {
+
         private final String selector;
-        private ArrayList<String> props;
+        private HashMap<String,String> props;
 
-        public Properties(String selector) {
+        public PropertiesBlueprint(String selector) {
 
             this.selector=selector;
-            props=new ArrayList<>();
+            props=new HashMap<>();
 
         }
 
 
-        public void add(String attribute) {
-            props.add(attribute);
+        /**
+         * Adds an attribute or property to the list of target attributes/properties for the last added key using {@code set(key,selector)}
+         * @param key the key to which the attribute value is to be set in the output
+         * @param attribute the attribute to be extracted
+         * @return this, for chaining
+         */
+        public PropertiesBlueprint set(String key,String attribute)
+        {
+            props.put(key, attribute);
+            return this;
         }
+
+        public PropertiesBlueprint set(String key)
+        {
+            props.put(key,"html");
+            return this;
+        }
+
+        public PropertiesBlueprint select(String selector)
+        {
+            return DOMSelectorMatchBuilder.this.select(selector);
+        }
+
+        public DOMSelectorMatchBuilder close()
+        {
+            return DOMSelectorMatchBuilder.this;
+        }
+
     }
 
 

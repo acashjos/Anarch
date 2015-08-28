@@ -18,13 +18,13 @@ package io.github.acashjos.anarch;
 
 //import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Connection;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,6 +32,128 @@ import java.util.regex.Pattern;
 
 public class RegexValueMatchBuilder extends MatchBuilder {
 
+    ArrayList<PatternBlueprint> patternSet;
+
+    public RegexValueMatchBuilder() {
+
+        patternSet =new ArrayList<>();
+    }
+
+    @Override
+    protected JSONObject processResultText(Connection.Response response) throws JSONException {
+
+        String result = response.body();
+        JSONObject output = new JSONObject();
+        //HashMap<String,Matcher> matchset = new HashMap<>();
+        for(PatternBlueprint test: patternSet)
+        {
+            Pattern p=Pattern.compile(test.pattern);
+            Matcher m=p.matcher(result);
+
+            JSONArray arr=new JSONArray();
+            while (m.find())
+            {
+                JSONObject single=test.once?output:new JSONObject();
+
+                //insers keys from mainTest
+                for (Map.Entry<String,Integer> outkey:test.outputKeySet.entrySet())
+                    single.put(outkey.getKey(),m.group(outkey.getValue()));
+
+                for(PatternBlueprint subtest:test.subPatternSet)
+                {
+                    String patern=test.pattern;
+                    for (int i = 1; i <= m.groupCount(); ++i) {
+                        patern = patern.replace("%" + i, m.group(i));
+                    }
+                    Pattern p2=Pattern.compile(patern);
+                    Matcher m2=p2.matcher(m.group(subtest.source_group));
+                    if(m2.find())
+                        //insert keys from subtest
+                        for (Map.Entry<String,Integer> outkey:subtest.outputKeySet.entrySet())
+                            single.put(outkey.getKey(),m2.group(outkey.getValue()));
+                }
+                if(!test.once)
+                {
+                    arr.put(single);
+                }
+
+            }
+            if(!test.once)output.put(test.id,arr);
+
+            while (m.find()){
+                JSONObject branch=new JSONObject();
+
+                for(Map.Entry<String,Integer> OPitem: test.outputKeySet.entrySet())
+                {
+                    branch.put(OPitem.getKey(),m.group(OPitem.getValue()));
+                }
+                arr.put(branch);
+            }
+
+
+        }
+        return null;
+    }
+
+    public PatternBlueprint addTest(String key,String pattern)
+    {
+        PatternBlueprint blueprint=new PatternBlueprint(key,pattern);
+        patternSet.add(blueprint);
+        return blueprint;
+    }
+
+
+
+    private class PatternBlueprint {
+
+        private final String pattern;
+        private final PatternBlueprint parent;
+        private Boolean once;
+        private String id;
+        private int source_group;
+        private HashMap<String,Integer> outputKeySet;
+        private ArrayList<PatternBlueprint> subPatternSet;
+
+        public PatternBlueprint(String id,String pattern) {
+            this.pattern=pattern;
+            outputKeySet=new HashMap<>();
+            this.id=id;
+            this.parent=this;
+            subPatternSet=new ArrayList<>();
+        }
+
+        public PatternBlueprint(String pattern,int group,PatternBlueprint parent) {
+            this.pattern=pattern;
+            this.once=true;
+            this.source_group=group;
+            outputKeySet=new HashMap<>();
+           this.parent = parent;
+        }
+
+        public PatternBlueprint addTest(String key,String pattern) {
+            return RegexValueMatchBuilder.this.addTest(key, pattern);
+        }
+
+        public PatternBlueprint addSubTest(String pattern,int source_group) {
+            PatternBlueprint blueprint=new PatternBlueprint(pattern,source_group,parent);
+            subPatternSet.add(blueprint);
+            return blueprint;
+        }
+
+        public PatternBlueprint set(String key, int group)
+        {
+            outputKeySet.put(key,group);
+            return this;
+        }
+
+        public RegexValueMatchBuilder close()
+        {
+            return RegexValueMatchBuilder.this;
+        }
+
+    }
+}
+/*
 
     private String regex;
     private HashMap<String, Integer> firstmatch;
@@ -140,3 +262,4 @@ public class RegexValueMatchBuilder extends MatchBuilder {
 
 
 }
+*/
