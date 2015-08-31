@@ -24,7 +24,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
-//import android.util.Log;
+
 import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -49,6 +49,7 @@ public class WebViewLogin extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web_view_login);
 
+        //Log.e("debug", "Login Activity created");
         instance=this;
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setCookie("https://m.facebook.com", "");
@@ -61,8 +62,6 @@ public class WebViewLogin extends Activity {
 
             @Override
             public void onPageFinished(WebView view, String url) {
-
-               // Log.d("debug",url);
 
                 setTitle(view.getTitle());
                 CookieManager cookieManager = CookieManager.getInstance();
@@ -108,7 +107,7 @@ public class WebViewLogin extends Activity {
     @SuppressLint("NewApi")
     private void kitkat(WebView view) {
         view.evaluateJavascript(
-                "window.btoa(function() { return window.btoa('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
+                "(function() { return window.btoa('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
                 new ValueCallback<String>() {
                     @Override
                     public void onReceiveValue(String result) {
@@ -130,15 +129,16 @@ public class WebViewLogin extends Activity {
 
          void finalize(String result) {
 
-             this.htmlText = new String(Base64.decode(result, Base64.DEFAULT));
+
+             htmlText = new String(Base64.decode(result, Base64.DEFAULT));
+
              Session.LoginState decision=Session.getActiveSession().loginDecisionLogic.loginDecision(
                     pageloadCount,
                     web,
                     Session.getActiveSession().evaluateMatches(htmlText),
                     cookies);
 
-             //Log.v("debug", "decision: " + decision.toString());
-            if(decision== Session.LoginState.SUCCESS)
+             if(decision== Session.LoginState.SUCCESS)
             {
                 getApplication().getSharedPreferences("cache", Context.MODE_PRIVATE).edit().putString("session",cookies).commit();
 

@@ -22,13 +22,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.webkit.WebView;
 
-
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 //import android.util.Log;
@@ -72,6 +67,7 @@ public class Session{
 
     public void logoutSession() {
         cookies="";
+        session=null;
         pref.edit().clear().commit();
     }
 
@@ -109,8 +105,8 @@ public class Session{
         if(logic==null) throw new IllegalArgumentException("Logic cant be null with this initializer");
         initialize( applicationContext,  url,  null,  logic);
     }
-    public static void initialize(Context applicationContext, String url, MatchBuilder matchBuilder) {
-        initialize( applicationContext,  url,  matchBuilder, null);
+    public static void initialize(Context applicationContext, String url) {
+        initialize( applicationContext,  url,  null, null);
     }
 
     public static Session getActiveSession() {
@@ -156,29 +152,25 @@ public class Session{
 
             if(WebViewLogin.instance!=null)
             {
-                JSONObject passwordFields = MatchBuilder.run(WebViewLogin.instance.htmlText,
+                JSONObject passwordField = MatchBuilder.run(WebViewLogin.instance.htmlText,
                         (new DOMSelectorMatchBuilder())
-                                .select("input[type=password]")
+                                .select("input[type=password]","null")
                                 .set("pfield", "name")
                                 .close());
 
+                if(passwordField.has("pfield")) {
 
-                JSONObject data=new JSONObject();
-                try {
-                    data= passwordFields.getJSONObject("data");
-                } catch (JSONException e) {
-                    return LoginState.FAIL;
-                }
-
-                if(data.has("pfield")) {
+                    //Log.v("debug", "pageLoadcount: "+pageloadCount);
                     if (pageloadCount < 2)
                         return LoginState.TRANSIT;
+
 
                     return LoginState.FAIL;
                 }
                 else return LoginState.SUCCESS;
 
             }
+            //Log.v("debug", "webloginview instance is null");
             return LoginState.FAIL;
         }
     }

@@ -18,6 +18,8 @@ package io.github.acashjos.anarch;
 
 //import android.util.Log;
 
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -51,15 +53,20 @@ public class RegexValueMatchBuilder extends MatchBuilder {
             JSONArray arr=new JSONArray();
             while (m.find())
             {
+                Log.v("debug", "find(): " + m.group());
                 JSONObject single=test.once?output:new JSONObject();
 
                 //insers keys from mainTest
-                for (Map.Entry<String,Integer> outkey:test.outputKeySet.entrySet())
+                for (Map.Entry<String,Integer> outkey:test.outputKeySet.entrySet()) {
+
+                    Log.v("debug", "outputkeyset: " + outkey.getKey());
                     try {
-                        single.put(outkey.getKey(),m.group(outkey.getValue()));
+                        single.put(outkey.getKey(), m.group(outkey.getValue()));
                     } catch (JSONException e) {
+                        e.printStackTrace();
                         continue;
                     }
+                }
 
                 for(PatternBlueprint subtest:test.subPatternSet)
                 {
@@ -75,6 +82,7 @@ public class RegexValueMatchBuilder extends MatchBuilder {
                             try {
                                 single.put(outkey.getKey(),m2.group(outkey.getValue()));
                             } catch (JSONException e) {
+                                e.printStackTrace();
                                 continue;
                             }
                 }
@@ -102,11 +110,11 @@ public class RegexValueMatchBuilder extends MatchBuilder {
 
 
 
-    private class PatternBlueprint {
+    public class PatternBlueprint {
 
         private final String pattern;
         private final PatternBlueprint parent;
-        private Boolean once;
+        private Boolean once=false;
         private String id;
         private int source_group;
         private HashMap<String,Integer> outputKeySet;

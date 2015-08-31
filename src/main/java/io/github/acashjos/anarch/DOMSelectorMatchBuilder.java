@@ -1,15 +1,16 @@
 package io.github.acashjos.anarch;
 
+
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,10 +30,17 @@ public class DOMSelectorMatchBuilder extends MatchBuilder {
     @Override
     protected JSONObject processResponseText(String responseText) {
         JSONObject output=new JSONObject();
-        Document dom = Jsoup.parse(responseText, response.url().toString());
+        Document dom;
+        Log.i("debug", "text : " + responseText);
+        if(response==null)
+             dom = Jsoup.parse(responseText);
+        else
+             dom = Jsoup.parse(responseText, response.url().toString());
+
         for(Map.Entry<String,PropertiesBlueprint> item: selectorMap.entrySet())
         {
             Elements elems = dom.select(item.getKey());
+            Log.i("debug", "elements selected: " + elems.size());
             if(elems.size()==0)
                 continue;
             else if(elems.size()==1)
@@ -40,17 +48,26 @@ public class DOMSelectorMatchBuilder extends MatchBuilder {
                 try {
                     for(Map.Entry<String,String> property : item.getValue().props.entrySet())
                         output.put(property.getKey(), extract(property.getValue(),elems.get(0)));
-                } catch (JSONException e) { continue;}
+                } catch (JSONException e) { e.printStackTrace();
+                    continue;}
             }
             else
             {
                 JSONArray jsonArray=new JSONArray();
                 for(Element sub_elm:elems)
                 {
+                    JSONObject object=new JSONObject();
                     try {
                         for(Map.Entry<String,String> property : item.getValue().props.entrySet())
-                            output.put(property.getKey(), extract(property.getValue(),sub_elm));
-                    } catch (JSONException e) { continue;}
+                            object.put(property.getKey(), extract(property.getValue(),sub_elm));
+                    } catch (JSONException e) { e.printStackTrace();
+                        continue;}
+                    jsonArray.put(object);
+                }
+                try {
+                    output.put(item.getValue().groupName,jsonArray);
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
             }
         }
@@ -65,12 +82,12 @@ public class DOMSelectorMatchBuilder extends MatchBuilder {
      * @param selector the selector to select HTML element/elements from which values can be extracted
      * @return this, for chaining
      */
-    public PropertiesBlueprint select(String selector)
+    public PropertiesBlueprint select(String selector, String id)
     {
         if(selectorMap.containsKey(selector))
             return selectorMap.get(selector);
 
-        PropertiesBlueprint propertiesBlueprint =new PropertiesBlueprint(selector);
+        PropertiesBlueprint propertiesBlueprint =new PropertiesBlueprint(selector,id);
         this.currentItem=selector;
         selectorMap.put(selector, propertiesBlueprint);
         return propertiesBlueprint;
@@ -100,14 +117,16 @@ public class DOMSelectorMatchBuilder extends MatchBuilder {
         }
     }
 
-    protected class PropertiesBlueprint {
+    public class PropertiesBlueprint {
 
         private final String selector;
         private HashMap<String,String> props;
+        public String groupName;
 
-        public PropertiesBlueprint(String selector) {
+        public PropertiesBlueprint(String selector,String id) {
 
             this.selector=selector;
+            groupName=id;
             props=new HashMap<>();
 
         }
@@ -132,9 +151,9 @@ public class DOMSelectorMatchBuilder extends MatchBuilder {
             return this;
         }
 
-        public PropertiesBlueprint select(String selector)
+        public PropertiesBlueprint select(String selector,String id)
         {
-            return DOMSelectorMatchBuilder.this.select(selector);
+            return DOMSelectorMatchBuilder.this.select(selector,id);
         }
 
         public DOMSelectorMatchBuilder close()

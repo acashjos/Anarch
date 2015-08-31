@@ -16,6 +16,8 @@
 
 package io.github.acashjos.anarch;
 
+import android.util.Log;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Connection;
@@ -30,6 +32,7 @@ public abstract class MatchBuilder {
     protected JSONObject processResponse(Connection.Response response) {
 
         this.response=response;
+        Log.e("debug", "url" + response.url());
         String result = response.body();
 
         JSONObject data = processResponseText(result);
