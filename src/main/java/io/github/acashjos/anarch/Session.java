@@ -42,7 +42,7 @@ public class Session{
     private MatchBuilder matchBuilder;
     LoginDecisionLogic loginDecisionLogic;
     private String cookies;
-    private StatusCallback callback;
+    private SuccessCallback callback;
 
     /**
      * Set user id for current session
@@ -202,16 +202,16 @@ public class Session{
     /**
      * Initiates login flow.
      * @param activity parent activity from which this method is called
-     * @param statusCallback callback to be called when login completes successfully
+     * @param successCallback callback to be called when login completes successfully
      */
-    public void openNewSession(Activity activity, StatusCallback statusCallback) {
-        this.callback=statusCallback;
+    public void openNewSession(Activity activity, SuccessCallback successCallback) {
+        this.callback= successCallback;
         Intent i=new Intent(activity,WebViewLogin.class);
         i.putExtra("url",url);
         activity.startActivityForResult(i,LOGIN_UI);
     }
 
-    public interface StatusCallback {
+    public interface SuccessCallback {
 
         // callback when session changes state
         void call(Session session);
