@@ -37,12 +37,16 @@ public class Request {
     private final ValuesHandler loadedListener;
     private final Map<String, String> headers;
     private final Map<String, String> cookies;
-    // private final String uid;
+
     private Session session;
 
     private ArrayList<String> regexList;
 
-
+/**
+ * Constructor
+ * @param matchBuilder a {@link MatchBuilder} object that contains all the blueprints of operations to be executed
+ * @param loadedListener to be called when the processing completes.
+ */
     public Request( MatchBuilder matchBuilder,ValuesHandler loadedListener)
     {
        // this.uid = url;
@@ -61,6 +65,10 @@ public class Request {
         headers.put("Cache-Control", "no-cache");
       }
 
+    /**
+     * Makes an http request to the specified url as an AsyncTask
+     * @param url remote url
+     */
     public void makeRequest(String url)
     {
         Async async = new Async();
@@ -68,6 +76,10 @@ public class Request {
 
     }
 
+    /**
+     * Sets the user session to be used in this request. If not called, the request will be made without session cookies
+     * @param session Session object
+     */
     public void setSession(Session session) {
         this.session = session;
 
@@ -88,10 +100,21 @@ public class Request {
 
     }
 
+    /**
+     * Sets request headers for this request
+     * @param key header key
+     * @param val header value
+     */
     public void setHeader(String key,String val)
     {
         headers.put(key,val);
     }
+
+    /**
+     * Sets cookie values
+     * @param key cookie key
+     * @param val cookie value
+     */
     public void setCookie(String key,String val)
     {
         cookies.put(key,val);

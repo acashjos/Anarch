@@ -26,5 +26,9 @@ import java.util.HashMap;
  */
 public interface ValuesHandler {
 
+    /**
+     * To be overriden. callback to be executed when Request and response processing are over.
+     * @param result JSONObject returned after processing the response text according to specified MatchBuilder blueprints
+     */
     void onValuesLoaded(JSONObject result);
 }

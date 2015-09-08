@@ -36,15 +36,24 @@ public class RegexValueMatchBuilder extends MatchBuilder {
 
     ArrayList<PatternBlueprint> patternSet;
 
+    /**
+     * RegexValueMatchBuilder constructor
+     */
     public RegexValueMatchBuilder() {
 
         patternSet =new ArrayList<>();
     }
 
+    /**
+     * Internal function
+     * Processes response body according to the matchbuilder specifications and returns JSONObject
+     * @param responseText String on which the operations are to be conducted
+     * @return JSONObject Object with all the extracted properties
+     */
     @Override
     protected JSONObject processResponseText(String responseText) {
         JSONObject output = new JSONObject();
-        //HashMap<String,Matcher> matchset = new HashMap<>();
+
         for(PatternBlueprint test: patternSet)
         {
             Pattern p=Pattern.compile(test.pattern);
@@ -101,14 +110,23 @@ public class RegexValueMatchBuilder extends MatchBuilder {
         }return output;
     }
 
-    public PatternBlueprint addTest(String key,String pattern)
+    /**
+     * Adds a new regex pattern to the lookup list.
+     * This creates and returns a new {@link PatternBlueprint} Object, insert it into pattern set and returns the object
+     * @param id Unique identifier for this pattern. If the pattern matches multiple elements, the extracted value branch will be a JSONArray with this id as key
+     * @param pattern the pattern to match on the target string
+     * @return {@link PatternBlueprint} Object, for chaining
+     */
+    public PatternBlueprint addTest(String id,String pattern)
     {
-        PatternBlueprint blueprint=new PatternBlueprint(key,pattern);
+        PatternBlueprint blueprint=new PatternBlueprint(id,pattern);
         patternSet.add(blueprint);
         return blueprint;
     }
 
-
+    /**
+     * Blueprint for values to be extracted corresponding to each regex pattern enlisted using builder
+     */
 
     public class PatternBlueprint {
 
@@ -120,6 +138,10 @@ public class RegexValueMatchBuilder extends MatchBuilder {
         private HashMap<String,Integer> outputKeySet;
         private ArrayList<PatternBlueprint> subPatternSet;
 
+        /**
+         * constructor #1
+         * for main patterns
+         */
         public PatternBlueprint(String id,String pattern) {
             this.pattern=pattern;
             outputKeySet=new HashMap<>();
@@ -128,7 +150,12 @@ public class RegexValueMatchBuilder extends MatchBuilder {
             subPatternSet=new ArrayList<>();
         }
 
+        /**
+         * constructor #2
+         * for subpatterns
+         */
         public PatternBlueprint(String pattern,int group,PatternBlueprint parent) {
+            //if(parent.parent!=parent) throw new IllegalArgumentException("Subpatterns can't be created on a subpattern");
             this.pattern=pattern;
             this.once=true;
             this.source_group=group;
@@ -136,14 +163,38 @@ public class RegexValueMatchBuilder extends MatchBuilder {
            this.parent = parent;
         }
 
+        /**
+         * match the pattern only once. If the pattern is recurring, only the first occurrence is matched.
+         */
+
         public PatternBlueprint doOnce()
         {
             once=true;
             return this;
         }
-        public PatternBlueprint addTest(String key,String pattern) {
-            return RegexValueMatchBuilder.this.addTest(key, pattern);
+
+        /**
+         * Calls {@link RegexValueMatchBuilder#addTest(String, String)}
+         * Adds a new regex pattern to the lookup list.
+         * This creates and returns a new {@link PatternBlueprint} Object, insert it into pattern set and returns the object
+         * @param id Unique identifier for this pattern. If the pattern matches multiple elements, the extracted value branch will be a JSONArray with this id as key
+         * @param pattern the pattern to match on the target string
+         * @return {@link PatternBlueprint} Object, for chaining
+         */
+        public PatternBlueprint addTest(String id,String pattern) {
+            return RegexValueMatchBuilder.this.addTest(id, pattern);
         }
+
+        /**
+         * Adds a new regex pattern to the lookup list within the parent {@link PatternBlueprint} scope
+         * This creates and returns a new {@link PatternBlueprint} Object, insert it into pattern set and returns the object
+         * Subpatterns are matched only once, equivalent to calling {@link #doOnce()}
+         * Subpatterns defined on a subpattern will be ignored
+         * @param pattern the pattern to match on the target string
+         * @param source_group backreference from the parent patten match to be used as the target string for this sub pattern to test
+         * @return {@link PatternBlueprint} Object, for chaining
+         */
+        //        * Subpatterns defined on a subpattern will throw IllegalArgumentException
 
         public PatternBlueprint addSubTest(String pattern,int source_group) {
             PatternBlueprint blueprint=new PatternBlueprint(pattern,source_group,parent);
@@ -151,12 +202,22 @@ public class RegexValueMatchBuilder extends MatchBuilder {
             return blueprint;
         }
 
+        /**
+         * Sets {@code key} in Output JSON to value corresponding to backreference group number from pattern match
+         * @param key the key to which the value is to be set in the output
+         * @param group backreference group number from pattern match
+         * @return this, for chaining
+         */
         public PatternBlueprint set(String key, int group)
         {
             outputKeySet.put(key,group);
             return this;
         }
 
+        /**
+         * Returns the MatchBuilder Object
+         * @return RegexValueMatchBuilder object containing list of all the {@link PatternBlueprint} objects
+         */
         public RegexValueMatchBuilder close()
         {
             return RegexValueMatchBuilder.this;
@@ -164,113 +225,3 @@ public class RegexValueMatchBuilder extends MatchBuilder {
 
     }
 }
-/*
-
-    private String regex;
-    private HashMap<String, Integer> firstmatch;
-    private HashMap<String, String> submatch;
-    private HashMap<String, String> prefill;
-    private ArrayList<String> once;
-    private boolean singleValue = false;
-
-      protected JSONObject processResponse(Connection.Response response) throws JSONException {
-
-          String result = response.body();
-          JSONObject result_set = new JSONObject();
-          result_set.put("headers", new JSONObject(response.headers()));
-
-            Pattern p = Pattern.compile(regex);
-            Matcher m = p.matcher(result);
-          //Log.e("debug", "patern: "+regex);
-            int c = 0;
-            while (m.find()) {
-                //Log.e("debug", regex + "-" + (c++));
-                //Log.e("debug", m.group());
-                //Log.e("debug", m.group(0));
-                HashMap<String, String> result_map = new HashMap<>();
-                //copy prefills
-                Iterator entries = prefill.entrySet().iterator();
-                while (entries.hasNext()) {
-                    Map.Entry entry = (Map.Entry) entries.next();
-                    result_map.put((String) entry.getKey(), (String) entry.getValue());
-                }
-                //copy back refferences
-                entries = firstmatch.entrySet().iterator();
-                while (entries.hasNext()) {
-
-                    Map.Entry entry = (Map.Entry) entries.next();
-                    String key = (String) entry.getKey();
-                    Integer value = (Integer) entry.getValue();
-                    if (m.group(value) != null || result_map.get(key)==null)
-                        result_map.put(key, m.group(value));
-                }
-                //run sub regex and copy relevent data
-                entries = submatch.entrySet().iterator();
-                while (entries.hasNext()) {
-                    Map.Entry entry = (Map.Entry) entries.next();
-                    String key = (String) entry.getKey();
-                    String value = (String) entry.getValue();
-                    for (int i = 1; i <= m.groupCount(); ++i) {
-                        value = value.replace("$" + i, m.group(i));
-                    }
-                    Pattern pp = Pattern.compile(value);
-                    Matcher mm = pp.matcher(result);
-                    if (mm.find() && mm.group(1) != null)
-                        result_map.put(key, mm.group(1));
-                    if (once.contains(key)) {
-                        entries.remove();
-                        prefill.remove(key);
-                    }
-                }
-
-                result_set.put("data", new JSONObject(result_map));
-                if (singleValue) break;
-            }
-            return result_set;
-        }
-
-
-
-    public RegexValueMatchBuilder() {
-        firstmatch = new HashMap<>();
-        submatch = new HashMap<>();
-        prefill = new HashMap<>();
-        once = new ArrayList<>();
-    }
-
-    public RegexValueMatchBuilder base_exp(String regex) {
-        this.regex = regex;
-        return this;
-    }
-
-    public RegexValueMatchBuilder fill(String property, int matchGroup) {
-
-        firstmatch.put(property, matchGroup);
-        return this;
-    }
-
-    public RegexValueMatchBuilder fill(String property, String regex, String defaultValue) {
-        prefill.put(property, defaultValue);
-        submatch.put(property, regex);
-        return this;
-    }
-
-    public RegexValueMatchBuilder pre_fill(String property, String value) {
-        prefill.put(property, value);
-        return this;
-    }
-
-    public RegexValueMatchBuilder fill_once(String property, String regex, String defaultval) {
-        once.add(property);
-        return fill(property, regex, defaultval);
-    }
-
-    public RegexValueMatchBuilder once() {
-        singleValue = true;
-        return this;
-    }
-
-
-
-}
-*/

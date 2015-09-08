@@ -22,11 +22,19 @@ public class DOMSelectorMatchBuilder extends MatchBuilder {
     HashMap<String, PropertiesBlueprint> selectorMap;
     private String currentItem;
 
+    /**
+     * DOMSelectorMatchBuilder constructor
+     */
     public DOMSelectorMatchBuilder() {
         this.selectorMap = new HashMap<>();
     }
 
-
+    /**
+     * Internal function
+     * Processes response body according to the matchbuilder specifications and returns JSONObject
+     * @param responseText String on which the operations are to be conducted
+     * @return JSONObject Object with all the extracted properties
+     */
     @Override
     protected JSONObject processResponseText(String responseText) {
         JSONObject output=new JSONObject();
@@ -75,12 +83,11 @@ public class DOMSelectorMatchBuilder extends MatchBuilder {
     }
 
     /**
-     * Adds a new key to the addTargetProperty list along with a CSS selector string.
-     * The values will be extracted from HTML element/elements matched by the selector string.
-     * Add attributes/properties to be extracted using {@code addTargetProperty(String attribute)}. Default property to be extracted is innerHTML
-     * This will result in a JSONObject with {@code key} as key and extracted result as value
+     * Adds a new CSS selector to the lookup list.
+     * This creates and returns a new {@link PropertiesBlueprint} Object if the selector is not already added, else returns existing {@link PropertiesBlueprint} Object
      * @param selector the selector to select HTML element/elements from which values can be extracted
-     * @return this, for chaining
+     * @param id Unique identifier for this selector. If the selector matches multiple elements, the extracted value branch will be a JSONArray with this id as key
+     * @return {@link PropertiesBlueprint} Object, for chaining
      */
     public PropertiesBlueprint select(String selector, String id)
     {
@@ -94,7 +101,13 @@ public class DOMSelectorMatchBuilder extends MatchBuilder {
     }
 
 
-
+    /**
+     * Private Method
+     * Decides what attribute to extract and returns the extracted attribute value
+     * @param attr The attributeto extract
+     * @param element HTML element from which the attribute value is to be taken
+     * @return String, extracted value
+     */
     private String extract(String attr, Element element) throws JSONException {
         switch (attr.toLowerCase())
         {
@@ -117,6 +130,9 @@ public class DOMSelectorMatchBuilder extends MatchBuilder {
         }
     }
 
+    /**
+     * Blueprint for values to be extracted corresponding to each selector enlisted using builder
+     */
     public class PropertiesBlueprint {
 
         private final String selector;
@@ -145,16 +161,34 @@ public class DOMSelectorMatchBuilder extends MatchBuilder {
             return this;
         }
 
+        /**
+         * Calls {@code set(key,selector)} with innerHTML as attribute
+         * @param key the key to which the attribute value is to be set in the output
+         * @return this, for chaining
+         */
+
         public PropertiesBlueprint set(String key)
         {
             props.put(key,"html");
             return this;
         }
-
+        /**
+         * Calls {@link DOMSelectorMatchBuilder#select(String, String)}
+         * Adds a new CSS selector to the lookup list.
+         * This creates and returns a new {@link PropertiesBlueprint} Object if the selector is not already added, else returns existing {@link PropertiesBlueprint} Object
+          @param selector the selector to select HTML element/elements from which values can be extracted
+         * @param id Unique identifier for this selector. If the selector matches multiple elements, the extracted value branch will be a JSONArray with this id as key
+         * @return {@link PropertiesBlueprint} Object, for chaining
+         */
         public PropertiesBlueprint select(String selector,String id)
         {
             return DOMSelectorMatchBuilder.this.select(selector,id);
         }
+
+        /**
+         * Returns the MatchBuilder Object
+         * @return RegexValueMatchBuilder object containing list of all the {@link PropertiesBlueprint} objects
+         */
 
         public DOMSelectorMatchBuilder close()
         {

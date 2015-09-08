@@ -29,6 +29,14 @@ public abstract class MatchBuilder {
 
     protected Connection.Response response;
 
+    /**
+     * Internal function
+     * accepts JSoup's Connection.Response Object, assigns the object to field {@link #response}, and calls {@code processResponseText(response.body())}
+     * The JSON object returned from {@link #processResponse} is wrapped in another JSON object along with requestheader information
+     * @param response {@link Connection.Response} object obtained from the HTTP connection using jsoup
+     * @return JSONObject of the form {@code {"headers":{<header info>}, "data":{<extracted data>}}}
+     */
+
     protected JSONObject processResponse(Connection.Response response) {
 
         this.response=response;
@@ -45,6 +53,7 @@ public abstract class MatchBuilder {
             return null;
         }
     }
+
     protected abstract JSONObject processResponseText(String responseText);
 
     public static JSONObject run(String target,MatchBuilder matchBuilder){
