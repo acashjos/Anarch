@@ -48,7 +48,7 @@ Anarch includes 2 implementations of MatchBuilder abstract class
 In this example, *DOMSelectorMatchBuilder* is used
 ```
 DOMSelectorMatchBuilder matchBuilder = new DOMSelectorMatchBuilder();
-matchBuilder.select("title","selector-id")
+matchBuilder.select("title","some-identifier")
             .set("key","innerHTML")
             .close();
   ```
