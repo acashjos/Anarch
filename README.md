@@ -1,4 +1,6 @@
 # Anarch
+>This library is still in beta. Various components may change in future.
+
 An android library to login to websites, manage session and extract data using those cookies
 >Uses [jsoup](http://jsoup.org/)
 
